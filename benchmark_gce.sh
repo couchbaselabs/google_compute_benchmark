@@ -62,11 +62,18 @@ function createServerInstances {
 for i in `seq 1 $NUM_SERVERS`
 do
   INSTANCE="cb-server-$i"
+  # Only assign external IP addresses to the first few nodes (we
+  # only have a limited number available).
+  if [[ $i -le 7 ]]; then
+    NETWORK_SETTINGS="--network default"
+  else
+    NETWORK_SETTINGS="--network default --no-address"
+  fi
   echo Creating $INSTANCE
   gcloud compute --project $PROJECT  disks create ${INSTANCE}-boot --zone $ZONE --source-snapshot $SERVER_SNAPSHOT --type "pd-standard"
   gcloud compute --project $PROJECT  disks create ${INSTANCE}-data --zone $ZONE --source-snapshot ${CB_DATA_SNAPSHOT}-${DATA_DISK_SIZE} --type $DATA_DISK_TYPE
 
-  gcloud compute --project $PROJECT instances create $INSTANCE --zone $ZONE --machine-type "n1-standard-16" --network "default" --maintenance-policy "MIGRATE" --scopes "https://www.googleapis.com/auth/devstorage.read_only" --tags "http-server" "https-server" --disk "name=${INSTANCE}-boot" "device-name=${INSTANCE}-boot" "mode=rw" "boot=yes" "auto-delete=yes" --disk "name=${INSTANCE}-data" "device-name=${INSTANCE}-data" "mode=rw" "boot=no"
+  gcloud compute --project $PROJECT instances create $INSTANCE --zone $ZONE --machine-type "n1-standard-16" ${NETWORK_SETTINGS} --maintenance-policy "MIGRATE" --scopes "https://www.googleapis.com/auth/devstorage.read_only" --tags "http-server" "https-server" --disk "name=${INSTANCE}-boot" "device-name=${INSTANCE}-boot" "mode=rw" "boot=yes" "auto-delete=yes" --disk "name=${INSTANCE}-data" "device-name=${INSTANCE}-data" "mode=rw" "boot=no"
 done
 }
 
