@@ -10,7 +10,7 @@ CLIENT_SNAPSHOT='cb-client-image'
 CB_DATA_DISK="cb-data-disk"
 CB_DATA_SNAPSHOT="cb-data-snapshot"
 DATA_DISK_TYPE="pd-ssd"  # "pd-standard" or "pd-ssd"
-DATA_DISK_SIZE=500
+DATA_DISK_SIZE=200
 
 # Create Server snapshot
 
