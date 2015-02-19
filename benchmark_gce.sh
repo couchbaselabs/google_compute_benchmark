@@ -3,7 +3,7 @@
 PROJECT="cb-googbench-101"
 ZONE="us-central1-f"
 NUM_SERVERS=20
-NUM_CLIENTS=3
+NUM_CLIENTS=16
 SERVER_SNAPSHOT="couchbase-3-0-2"
 BASE_IMAGE_NAME="cb-server-template"
 CLIENT_SNAPSHOT='cb-client-image'
@@ -72,7 +72,7 @@ do
   INSTANCE="cb-client-$i"
   echo Creating $INSTANCE
   gcloud compute --project $PROJECT disks create ${INSTANCE}-boot --zone $ZONE --source-snapshot $CLIENT_SNAPSHOT --type "pd-standard"
-  gcloud compute --project $PROJECT instances create $INSTANCE --zone $ZONE --machine-type "n1-standard-16" --network "default" --maintenance-policy "MIGRATE" --scopes "https://www.googleapis.com/auth/devstorage.read_only" --tags "http-server" "https-server" --disk "name=${INSTANCE}-boot" "device-name=${INSTANCE}-boot" "mode=rw" "boot=yes" "auto-delete=yes"
+  gcloud compute --project $PROJECT instances create $INSTANCE --zone $ZONE --machine-type "n1-highcpu-16" --network "default" --maintenance-policy "MIGRATE" --scopes "https://www.googleapis.com/auth/devstorage.read_only" --tags "http-server" "https-server" --disk "name=${INSTANCE}-boot" "device-name=${INSTANCE}-boot" "mode=rw" "boot=yes" "auto-delete=yes"
 done
 }
 
