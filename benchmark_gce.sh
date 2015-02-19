@@ -18,6 +18,12 @@ function createServerTemplate {
 
   echo "Creating Template for Couchbase Server Instances..."
 
+  echo "Deleting previous data volume..."
+  gcloud compute --project $PROJECT disks delete ${CB_DATA_DISK}-${DATA_DISK_SIZE} --zone $ZONE --quiet
+
+  echo "Deleting previous master Couchbase Server instance"
+  gcloud compute --project $PROJECT instances delete $BASE_IMAGE_NAME --zone $ZONE --quiet
+
   echo "Creating blank data volume..."
   gcloud compute --project $PROJECT disks create ${CB_DATA_DISK}-${DATA_DISK_SIZE} --size $DATA_DISK_SIZE --zone $ZONE --type "pd-standard"
 
