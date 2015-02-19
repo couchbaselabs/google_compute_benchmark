@@ -69,10 +69,20 @@ do
   else
     NETWORK_SETTINGS="--network default --no-address"
   fi
-  echo Creating $INSTANCE
+  echo "=== Creating $INSTANCE==="
+
+  echo "* Deleting previous disks"
+  gcloud compute --project $PROJECT disks delete ${INSTANCE}-boot --zone $ZONE --quiet
+  gcloud compute --project $PROJECT disks delete ${INSTANCE}-data --zone $ZONE --quiet
+
+  echo "* Deleting previous instance"
+  gcloud compute --project $PROJECT instances delete $INSTANCE --zone $ZONE --quiet
+
+  echo "* Creating disks"
   gcloud compute --project $PROJECT  disks create ${INSTANCE}-boot --zone $ZONE --source-snapshot $SERVER_SNAPSHOT --type "pd-standard"
   gcloud compute --project $PROJECT  disks create ${INSTANCE}-data --zone $ZONE --source-snapshot ${CB_DATA_SNAPSHOT}-${DATA_DISK_SIZE} --type $DATA_DISK_TYPE
 
+  echo "* Creating instance"
   gcloud compute --project $PROJECT instances create $INSTANCE --zone $ZONE --machine-type "n1-standard-16" ${NETWORK_SETTINGS} --maintenance-policy "MIGRATE" --scopes "https://www.googleapis.com/auth/devstorage.read_only" --tags "http-server" "https-server" --disk "name=${INSTANCE}-boot" "device-name=${INSTANCE}-boot" "mode=rw" "boot=yes" "auto-delete=yes" --disk "name=${INSTANCE}-data" "device-name=${INSTANCE}-data" "mode=rw" "boot=no"
 done
 }
