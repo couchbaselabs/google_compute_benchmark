@@ -1,18 +1,21 @@
 #!/bin/bash
 
-PROJECT="cb-googbench-101"
-ZONE="us-central1-f"
+DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+source ${DIR}/gcloud_inc.sh
+
 CLIENT="cb-client"
-NUM_DOCS=$(( 100 * 1000000 ))
-#NUM_DOCS=$(( 3 * 1000 * 1000000 ))
-PHYSICAL_CLIENTS=16
-NUM_CLIENTS=16
+#NUM_DOCS=$(( 100 * 1000000 ))
+NUM_DOCS=$(( 3000 * 1000000 ))
+WORKING_SET=$(( 100 * 1000000 ))
+#WORKING_SET=${NUM_DOCS}
+PHYSICAL_CLIENTS=32
+NUM_CLIENTS=32
 BATCH_SIZE=200
-ITERATIONS=$(( $(( NUM_DOCS / BATCH_SIZE / NUM_CLIENTS )) + 1 ))
-#ITERATIONS=5000
-DOCS_PER_CLIENT=$(( ${NUM_DOCS} / ${NUM_CLIENTS} ))
+ITERATIONS=$(( $(( WORKING_SET / BATCH_SIZE / NUM_CLIENTS )) + 1 ))
+#ITERATIONS=100
+DOCS_PER_CLIENT=$(( ${WORKING_SET} / ${NUM_CLIENTS} ))
 RATE_LIMIT=5000
-THREADS=16
+THREADS=8
 
 PILLOWFIGHT="ulimit -n 10240 && ./cbc-pillowfight --min-size=200 --max-size=200 \
   --num-threads=${THREADS} --num-items=${DOCS_PER_CLIENT} --set-pct=100 \
@@ -20,34 +23,47 @@ PILLOWFIGHT="ulimit -n 10240 && ./cbc-pillowfight --min-size=200 --max-size=200 
   --sequential --no-population --rate-limit=${RATE_LIMIT}  --durability"
 
 
-echo "=== Running ${NUM_CLIENTS} clients ${THREADS} threads accessing ${NUM_DOCS} documents (${ITERATIONS} iterations) ==="
+echo "=== Running ${NUM_CLIENTS} clients ${THREADS} threads accessing ${WORKING_SET} documents (${ITERATIONS} iterations) ==="
 echo
 
 trap ctrl_c INT
 function ctrl_c() {
     echo "** Caught Ctrl-C - terminating clients..."
     for i in $(seq 1 ${PHYSICAL_CLIENTS}); do
-        gcloud compute --project ${PROJECT} ssh --zone ${ZONE} ${CLIENT}-${i} \
-               --command "kill \$(pgrep cbc-pillowfight)"
+        gcloud_ssh ${CLIENT}-${i} "pgrep cbc-pillowfight | xargs kill"
     done
     exit
 }
 
+# Start monitoring
+monitor_host=cb-server-4
+gcloud compute --project ${PROJECT} copy-files --zone ${ZONE} cb_perf_monitor.sh ${monitor_host}:.
+gcloud_ssh ${monitor_host} "chmod 0755 cb_perf_monitor.sh && ./cb_perf_monitor.sh" &
+MONITOR_PID=$!
+
 for i in $(seq 1 ${NUM_CLIENTS}); do
-    echo "* Starting client $i"
-    host=${CLIENT}-$(( $(( $i % ${PHYSICAL_CLIENTS} )) + 1 ))
+    host_num=$(( $i % ${PHYSICAL_CLIENTS} ))
+    if [[ $host_num == "0" ]]; then
+        host_num=${PHYSICAL_CLIENTS}
+    fi
+    host=${CLIENT}-${host_num}
+    echo "* Starting client $i (host $host)"
     if [[ $i == "1" ]]; then
         # 1 is special; we record timings directly from it.
         echo "Client $i outputting to durability_perf.$$"
-        gcloud compute --project ${PROJECT} ssh --zone ${ZONE} ${host} \
-                  --command "${PILLOWFIGHT} --key-prefix=c${i} > durability_perf.$$" &
+        gcloud_ssh ${host} "${PILLOWFIGHT} --key-prefix=c${i} > durability_perf.$$" &
+        CLIENT_PID[${i}]=$!
     else
         # rest just discard output.
-           gcloud compute --project ${PROJECT} ssh --zone ${ZONE} ${host} \
-                  --command "${PILLOWFIGHT} --key-prefix=c${i} > /dev/null" &
-        true
+        gcloud_ssh ${host} "${PILLOWFIGHT} --key-prefix=c${i} > /dev/null" &
+        CLIENT_PID[${i}]=$!
     fi
     # wait between each one
-    sleep 1
+    sleep 2
 done
-wait
+
+for i in $(seq 1 ${NUM_CLIENTS}); do
+    wait ${CLIENT_PID[$i]}
+done
+
+kill $MONITOR_PID
