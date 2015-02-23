@@ -2,8 +2,8 @@
 
 PROJECT="cb-googbench-101"
 ZONE="us-central1-f"
-NUM_SERVERS=20
-NUM_CLIENTS=16
+NUM_SERVERS=40
+NUM_CLIENTS=32
 SERVER_SNAPSHOT="couchbase-3-0-2"
 BASE_IMAGE_NAME="cb-server-template"
 CLIENT_SNAPSHOT='cb-client-image'
@@ -71,12 +71,8 @@ do
   fi
   echo "=== Creating $INSTANCE==="
 
-  echo "* Deleting previous disks"
-  gcloud compute --project $PROJECT disks delete ${INSTANCE}-boot --zone $ZONE --quiet
-  gcloud compute --project $PROJECT disks delete ${INSTANCE}-data --zone $ZONE --quiet
-
-  echo "* Deleting previous instance"
-  gcloud compute --project $PROJECT instances delete $INSTANCE --zone $ZONE --quiet
+  echo "* Deleting previous instance and disks"
+  gcloud compute --project $PROJECT instances delete $INSTANCE --zone $ZONE --delete-disks all --quiet
 
   echo "* Creating disks"
   gcloud compute --project $PROJECT  disks create ${INSTANCE}-boot --zone $ZONE --source-snapshot $SERVER_SNAPSHOT --type "pd-standard"
@@ -95,7 +91,7 @@ do
   INSTANCE="cb-client-$i"
   echo Creating $INSTANCE
   gcloud compute --project $PROJECT disks create ${INSTANCE}-boot --zone $ZONE --source-snapshot $CLIENT_SNAPSHOT --type "pd-standard"
-  gcloud compute --project $PROJECT instances create $INSTANCE --zone $ZONE --machine-type "n1-highcpu-16" --network "default" --maintenance-policy "MIGRATE" --scopes "https://www.googleapis.com/auth/devstorage.read_only" --tags "http-server" "https-server" --disk "name=${INSTANCE}-boot" "device-name=${INSTANCE}-boot" "mode=rw" "boot=yes" "auto-delete=yes"
+  gcloud compute --project $PROJECT instances create $INSTANCE --zone $ZONE --machine-type "n1-highcpu-8" --network "default" --no-address --maintenance-policy "MIGRATE" --scopes "https://www.googleapis.com/auth/devstorage.read_only" --disk "name=${INSTANCE}-boot" "device-name=${INSTANCE}-boot" "mode=rw" "boot=yes" "auto-delete=yes"
 done
 }
 
