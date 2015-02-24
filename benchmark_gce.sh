@@ -79,7 +79,7 @@ do
   gcloud compute --project $PROJECT  disks create ${INSTANCE}-data --zone $ZONE --source-snapshot ${CB_DATA_SNAPSHOT}-${DATA_DISK_SIZE} --type $DATA_DISK_TYPE
 
   echo "* Creating instance"
-  gcloud compute --project $PROJECT instances create $INSTANCE --zone $ZONE --machine-type "n1-standard-16" ${NETWORK_SETTINGS} --maintenance-policy "MIGRATE" --scopes "https://www.googleapis.com/auth/devstorage.read_only" --tags "http-server" "https-server" --disk "name=${INSTANCE}-boot" "device-name=${INSTANCE}-boot" "mode=rw" "boot=yes" "auto-delete=yes" --disk "name=${INSTANCE}-data" "device-name=${INSTANCE}-data" "mode=rw" "boot=no"
+  gcloud compute --project $PROJECT instances create $INSTANCE --zone $ZONE --machine-type "n1-standard-8" ${NETWORK_SETTINGS} --maintenance-policy "MIGRATE" --scopes "https://www.googleapis.com/auth/devstorage.read_only" --tags "http-server" "https-server" --disk "name=${INSTANCE}-boot" "device-name=${INSTANCE}-boot" "mode=rw" "boot=yes" "auto-delete=yes" --disk "name=${INSTANCE}-data" "device-name=${INSTANCE}-data" "mode=rw" "boot=no"
 done
 }
 
