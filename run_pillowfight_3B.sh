@@ -6,25 +6,25 @@ DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 source ${DIR}/gcloud_inc.sh
 
 CLIENT="cb-client"
-#NUM_DOCS=$(( 100 * 1000000 ))
-NUM_DOCS=$(( 3000 * 1000000 ))
+NUM_DOCS=$(( 100 * 1000000 ))
+#NUM_DOCS=$(( 3000 * 1000000 ))
 #WORKING_SET=$(( 100 * 1000000 ))
 WORKING_SET=${NUM_DOCS}
 PHYSICAL_CLIENTS=32
 NUM_CLIENTS=32
-BATCH_SIZE=10
-TOKENS=--tokens=150
+BATCH_SIZE=750
+#TOKENS=--tokens=700
 #ITERATIONS=$(( $(( ${WORKING_SET} / ${BATCH_SIZE} / ${NUM_CLIENTS} )) + 1 ))
-ITERATIONS=$(( $(( ${WORKING_SET} / ${NUM_CLIENTS} )) ))
-#ITERATIONS=100
+ITERATIONS=$(( $(( ${WORKING_SET} / ${NUM_CLIENTS} )) * 2 ))
+#ITERATIONS=9000
 DOCS_PER_CLIENT=$(( ${WORKING_SET} / ${NUM_CLIENTS} ))
-RATE_LIMIT=0
-THREADS=4
+RATE_LIMIT=20000
+THREADS=2
 
 PILLOWFIGHT="ulimit -n 10240 && ./cbc-pillowfight --min-size=200 --max-size=200 \
   --num-threads=${THREADS} --num-items=${DOCS_PER_CLIENT} --set-pct=100 \
   --spec=couchbase://cb-server-1/charlie --batch-size=${BATCH_SIZE} --num-cycles=${ITERATIONS} \
-  --sequential --no-population --rate-limit=${RATE_LIMIT} --durability ${TOKENS}"
+  --sequential --no-population --rate-limit=${RATE_LIMIT} ${TOKENS} --durability"
 
 echo "=== Running ${NUM_CLIENTS} clients ${THREADS} threads accessing ${WORKING_SET} documents (${ITERATIONS} iterations) ==="
 echo
