@@ -28,7 +28,7 @@ for i in $(seq 1 ${NUM_CLIENTS}); do
     if [[ $i == "1" ]]; then
         # 1 is special - checkout and build.
         gcloud_ssh ${CLIENT}-${i} "sudo apt-get install -y cmake git libevent-dev"
-        gcloud_ssh ${CLIENT}-${i} "(cd libcouchbase && git fetch && git reset --hard origin/${BRANCH}) || git clone https://github.com/daverigby/libcouchbase.git --branch ${BRANCH}"
+        gcloud_ssh ${CLIENT}-${i} "(cd libcouchbase && git fetch && git reset --hard origin/${BRANCH}) || git clone https://github.com/dhaikney/libcouchbase.git --branch ${BRANCH}"
         gcloud_ssh ${CLIENT}-${i} "cd libcouchbase && mkdir -p build && cd build && ../cmake/configure && make"
     fi
 

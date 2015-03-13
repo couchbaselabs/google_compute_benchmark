@@ -2,15 +2,16 @@
 
 PROJECT="cb-googbench-101"
 ZONE="us-central1-f"
-NUM_SERVERS=40
+NUM_SERVERS=80
 NUM_CLIENTS=32
 SERVER_SNAPSHOT="couchbase-3-0-2"
 BASE_IMAGE_NAME="cb-server-template"
 CLIENT_SNAPSHOT='cb-client-image'
 CB_DATA_DISK="cb-data-disk"
 CB_DATA_SNAPSHOT="cb-data-snapshot"
+SERVER_TYPE="n1-standard-16"
 DATA_DISK_TYPE="pd-ssd"  # "pd-standard" or "pd-ssd"
-DATA_DISK_SIZE=200
+DATA_DISK_SIZE=500
 
 # Create Server snapshot
 
@@ -28,7 +29,7 @@ function createServerTemplate {
   gcloud compute --project $PROJECT disks create ${CB_DATA_DISK}-${DATA_DISK_SIZE} --size $DATA_DISK_SIZE --zone $ZONE --type "pd-standard"
 
   echo "Creating master Couchbase Server instance..."
-  gcloud compute --project $PROJECT instances create $BASE_IMAGE_NAME --zone $ZONE --machine-type "n1-standard-1" --network "default" --maintenance-policy "MIGRATE" --scopes "https://www.googleapis.com/auth/devstorage.read_only" --tags "http-server" "https-server" --image "https://www.googleapis.com/compute/v1/projects/debian-cloud/global/images/backports-debian-7-wheezy-v20150112" --boot-disk-type "pd-standard" --boot-disk-device-name $BASE_IMAGE_NAME  --disk "name=${CB_DATA_DISK}-${DATA_DISK_SIZE}" "device-name=${CB_DATA_DISK}-${DATA_DISK_SIZE}" "mode=rw" "boot=no" --metadata-from-file startup-script=setup_cb_image.sh
+  gcloud compute --project $PROJECT instances create $BASE_IMAGE_NAME --zone $ZONE --machine-type ${SERVER_TYPE} --network "default" --maintenance-policy "MIGRATE" --scopes "https://www.googleapis.com/auth/devstorage.read_only" --tags "http-server" "https-server" --image "https://www.googleapis.com/compute/v1/projects/debian-cloud/global/images/backports-debian-7-wheezy-v20150112" --boot-disk-type "pd-standard" --boot-disk-device-name $BASE_IMAGE_NAME  --disk "name=${CB_DATA_DISK}-${DATA_DISK_SIZE}" "device-name=${CB_DATA_DISK}-${DATA_DISK_SIZE}" "mode=rw" "boot=no" --metadata-from-file startup-script=setup_cb_image.sh
 
   while [ "`gcloud compute instances describe $BASE_IMAGE_NAME --project $PROJECT --zone $ZONE | grep  "status:" | cut -d' ' -f2`" != "TERMINATED" ]; do
     echo "Waiting for server startup script to finish"
@@ -79,7 +80,7 @@ do
   gcloud compute --project $PROJECT  disks create ${INSTANCE}-data --zone $ZONE --source-snapshot ${CB_DATA_SNAPSHOT}-${DATA_DISK_SIZE} --type $DATA_DISK_TYPE
 
   echo "* Creating instance"
-  gcloud compute --project $PROJECT instances create $INSTANCE --zone $ZONE --machine-type "n1-standard-8" ${NETWORK_SETTINGS} --maintenance-policy "MIGRATE" --scopes "https://www.googleapis.com/auth/devstorage.read_only" --tags "http-server" "https-server" --disk "name=${INSTANCE}-boot" "device-name=${INSTANCE}-boot" "mode=rw" "boot=yes" "auto-delete=yes" --disk "name=${INSTANCE}-data" "device-name=${INSTANCE}-data" "mode=rw" "boot=no"
+  gcloud compute --project $PROJECT instances create $INSTANCE --zone $ZONE --machine-type ${SERVER_TYPE} ${NETWORK_SETTINGS} --maintenance-policy "MIGRATE" --scopes "https://www.googleapis.com/auth/devstorage.read_only" --tags "http-server" "https-server" --disk "name=${INSTANCE}-boot" "device-name=${INSTANCE}-boot" "mode=rw" "boot=yes" "auto-delete=yes" --disk "name=${INSTANCE}-data" "device-name=${INSTANCE}-data" "mode=rw" "boot=no"
 done
 }
 

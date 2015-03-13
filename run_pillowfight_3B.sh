@@ -12,22 +12,23 @@ NUM_DOCS=$(( 100 * 1000000 ))
 WORKING_SET=${NUM_DOCS}
 PHYSICAL_CLIENTS=32
 NUM_CLIENTS=32
-BATCH_SIZE=750
-#TOKENS=--tokens=700
+BATCH_SIZE=50
+TOKENS=--tokens=275
 #ITERATIONS=$(( $(( ${WORKING_SET} / ${BATCH_SIZE} / ${NUM_CLIENTS} )) + 1 ))
-ITERATIONS=$(( $(( ${WORKING_SET} / ${NUM_CLIENTS} )) * 2 ))
+ITERATIONS=$(( $(( ${WORKING_SET} / ${NUM_CLIENTS} )) * 5 ))
 #ITERATIONS=9000
 DOCS_PER_CLIENT=$(( ${WORKING_SET} / ${NUM_CLIENTS} ))
 RATE_LIMIT=20000
 THREADS=2
+DURABILITY="--durability"
 
 PILLOWFIGHT="ulimit -n 10240 && ./cbc-pillowfight --min-size=200 --max-size=200 \
   --num-threads=${THREADS} --num-items=${DOCS_PER_CLIENT} --set-pct=100 \
   --spec=couchbase://cb-server-1/charlie --batch-size=${BATCH_SIZE} --num-cycles=${ITERATIONS} \
-  --sequential --no-population --rate-limit=${RATE_LIMIT} ${TOKENS} --durability"
+  --sequential --no-population --rate-limit=${RATE_LIMIT} ${TOKENS} ${DURABILITY}"
 
 echo "=== Running ${NUM_CLIENTS} clients ${THREADS} threads accessing ${WORKING_SET} documents (${ITERATIONS} iterations) ==="
-echo
+echo $PILLOWFIGHT
 
 trap ctrl_c INT
 function ctrl_c() {
