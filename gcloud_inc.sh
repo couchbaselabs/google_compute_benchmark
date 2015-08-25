@@ -12,7 +12,7 @@ ZONE="us-central1-f"
 gcloud_ssh() {
     host=$1
     shift
-    gateway=cb-client-1
+    gateway=${NODE_CLIENT_PREFIX}-1
 
     if [[ $host == $gateway ]]; then
         # Direct connection

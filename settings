@@ -1,0 +1,18 @@
+PROJECT="cb-googbench-101"
+ZONE="us-central1-f"
+NUM_SERVERS=8
+NUM_CLIENTS=32
+SERVER_SNAPSHOT="couchbase-server"
+BASE_IMAGE_NAME="cb-server-template"
+CLIENT_SNAPSHOT='cb-client-image'
+CB_DATA_DISK="cb-data-disk"
+CB_DATA_SNAPSHOT="cb-data-snapshot"
+SERVER_TYPE="n1-standard-16"
+DATA_DISK_TYPE="pd-ssd"  # "pd-standard" or "pd-ssd"
+DATA_DISK_SIZE=500
+USER=Administrator
+PASS=password
+INSTANCE_CREATE_BATCH_SIZE=4
+
+NODE_PREFIX="cb-server"
+NODE_CLIENT_PREFIX="cb-client"
