@@ -52,7 +52,7 @@ function createServerInstance {
   INSTANCE=$1
   NETWORK_SETTING=$2
 
-  gcloud compute --project $PROJECT instances stop $INSTANCE --quiet
+  gcloud compute --project $PROJECT instances stop $INSTANCE --quiet --zone $ZONE
   if ! gcloud compute --project $PROJECT instances delete $INSTANCE --zone $ZONE --delete-disks all --quiet; then
     gcloud compute --project $PROJECT disks delete ${INSTANCE}-boot --zone $ZONE --quiet
   fi

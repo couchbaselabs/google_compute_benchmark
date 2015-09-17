@@ -58,7 +58,7 @@ do
 NODE=${NODE_PREFIX}-${N}.c.${PROJECT}.internal
 
 #get external IP so we can set the datapath
-NODEIP=$(gcloud compute instances describe ${NODE_PREFIX}-${N} | grep natIP | cut -d':' -f2)
+NODEIP=$(gcloud compute instances describe --zone ${ZONE} ${NODE_PREFIX}-${N} | grep natIP | cut -d':' -f2)
 
 echo Adding $NODE to the cluster
 couchbase-cli node-init -c $NODEIP --node-init-data-path=$CBPATH --node-init-index-path=$CBPATH -u $USER -p $PASS
