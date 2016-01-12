@@ -34,7 +34,7 @@ function createClientTemplate {
 
   echo "Creating Template for Couchbase Client Instances..."
 
-  gcloud compute --project $PROJECT instances create $CLIENT_SNAPSHOT --zone $ZONE --machine-type "n1-standard-1" --network "default" --maintenance-policy "MIGRATE" --scopes "https://www.googleapis.com/auth/devstorage.read_only" --tags "http-server,https-server" --image $IMAGE_NAME --boot-disk-type "pd-standard" --boot-disk-device-name $CLIENT_SNAPSHOT --metadata-from-file startup-script=setup_client_image.sh
+  gcloud compute --project $PROJECT instances create $CLIENT_SNAPSHOT --zone $ZONE --machine-type ${CLIENT_TYPE} --network "default" --maintenance-policy "MIGRATE" --scopes "https://www.googleapis.com/auth/devstorage.read_only" --tags "http-server,https-server" --image $IMAGE_NAME --boot-disk-type "pd-standard" --boot-disk-device-name $CLIENT_SNAPSHOT --metadata-from-file startup-script=setup_client_image.sh
 
   rm -f /tmp/client-ready
   while [ ! -f /tmp/client-ready ]; do
@@ -101,7 +101,7 @@ do
   INSTANCE="${NODE_CLIENT_PREFIX}-${i}"
   echo Creating $INSTANCE
   gcloud compute --project $PROJECT disks create ${INSTANCE}-boot --zone $ZONE --source-snapshot $CLIENT_SNAPSHOT --type "pd-standard"
-  gcloud compute --project $PROJECT instances create $INSTANCE --zone $ZONE --machine-type "n1-highcpu-8" --network "default" --no-address --maintenance-policy "MIGRATE" --scopes "https://www.googleapis.com/auth/devstorage.read_only" --disk "name=${INSTANCE}-boot" "device-name=${INSTANCE}-boot" "mode=rw" "boot=yes" "auto-delete=yes"
+  gcloud compute --project $PROJECT instances create $INSTANCE --zone $ZONE --machine-type ${CLIENT_TYPE} --network "default" --no-address --maintenance-policy "MIGRATE" --scopes "https://www.googleapis.com/auth/devstorage.read_only" --disk "name=${INSTANCE}-boot" "device-name=${INSTANCE}-boot" "mode=rw" "boot=yes" "auto-delete=yes"
 done
 }
 
