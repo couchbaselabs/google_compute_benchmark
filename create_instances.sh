@@ -43,7 +43,11 @@ function createClientTemplate {
     sleep 10
   done
 
+  echo "Taking snapshot of root volumes..."
   gcloud compute --project $PROJECT disks snapshot "https://www.googleapis.com/compute/v1/projects/${PROJECT}/zones/${ZONE}/disks/${CLIENT_SNAPSHOT}" --zone $ZONE --snapshot-names $CLIENT_SNAPSHOT
+
+  echo "Deleting template instance"
+  gcloud compute --project $PROJECT instances delete $CLIENT_SNAPSHOT --zone $ZONE --quiet
 
 }
 
