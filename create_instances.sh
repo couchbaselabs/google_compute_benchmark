@@ -3,8 +3,7 @@
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 source ${DIR}/settings
 
-# Use 14.04 for now some debug tooling is better on 14.04 over 12.04
-IMAGE_NAME="ubuntu-14-04"
+
 
 # Create Server snapshot
 function createServerTemplate {
@@ -15,7 +14,7 @@ function createServerTemplate {
   gcloud compute --project $PROJECT instances delete $BASE_IMAGE_NAME --zone $ZONE --quiet
 
   echo "Creating master Couchbase Server instance..."
-  gcloud compute --project $PROJECT instances create $BASE_IMAGE_NAME --zone $ZONE --machine-type ${SERVER_TYPE} --network "default" --maintenance-policy "MIGRATE" --scopes "https://www.googleapis.com/auth/devstorage.read_only" --tags "http-server,https-server" --image  $IMAGE_NAME --boot-disk-type "pd-standard" --boot-disk-device-name $BASE_IMAGE_NAME --metadata-from-file startup-script=setup_cb_image.sh
+  gcloud compute --project $PROJECT instances create $BASE_IMAGE_NAME --zone $ZONE --machine-type ${SERVER_TYPE} --network "default" --maintenance-policy "MIGRATE" --scopes "https://www.googleapis.com/auth/devstorage.read_only" --tags "http-server,https-server" --image-family $IMAGE_FAMILY --boot-disk-type "pd-standard" --boot-disk-device-name $BASE_IMAGE_NAME --metadata-from-file startup-script=setup_cb_image.sh --image-project $IMAGE_PROJECT
 
   while [ "`gcloud compute instances describe $BASE_IMAGE_NAME --project $PROJECT --zone $ZONE | grep  "status:" | cut -d' ' -f2`" != "TERMINATED" ]; do
     echo "Waiting for server startup script to finish"
@@ -34,7 +33,7 @@ function createClientTemplate {
 
   echo "Creating Template for Couchbase Client Instances..."
 
-  gcloud compute --project $PROJECT instances create $CLIENT_SNAPSHOT --zone $ZONE --machine-type ${CLIENT_TYPE} --network "default" --maintenance-policy "MIGRATE" --scopes "https://www.googleapis.com/auth/devstorage.read_only" --tags "http-server,https-server" --image $IMAGE_NAME --boot-disk-type "pd-standard" --boot-disk-device-name $CLIENT_SNAPSHOT --metadata-from-file startup-script=setup_client_image.sh
+  gcloud compute --project $PROJECT instances create $CLIENT_SNAPSHOT --zone $ZONE --machine-type ${CLIENT_TYPE} --network "default" --maintenance-policy "MIGRATE" --scopes "https://www.googleapis.com/auth/devstorage.read_only" --tags "http-server,https-server" --image-family $IMAGE_FAMILY --boot-disk-type "pd-standard" --boot-disk-device-name $CLIENT_SNAPSHOT --metadata-from-file startup-script=setup_client_image.sh  --image-project $IMAGE_PROJECT
 
   rm -f /tmp/client-ready
   while [ ! -f /tmp/client-ready ]; do

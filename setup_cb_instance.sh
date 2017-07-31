@@ -1,4 +1,6 @@
 #! /bin/bash
-/usr/share/google/safe_format_and_mount -m "mkfs.ext4 -F" $(ls /dev/disk/by-id/google-*-data) /opt/couchbase/var/lib/couchbase/data/
+mkfs.ext4 -m 0 -F -E lazy_itable_init=0,lazy_journal_init=0,discard /dev/sdb
+mkdir -p /opt/couchbase/var/lib/couchbase/data
+mount -o discard,defaults /dev/sdb  /opt/couchbase/var/lib/couchbase/data
 chown -R couchbase:couchbase /opt/couchbase/var/lib/couchbase/data
 /etc/init.d/couchbase-server restart
