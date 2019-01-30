@@ -4,9 +4,9 @@
 
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 source ${DIR}/gcloud_inc.sh
+source ${DIR}/settings
 
-CLIENT="cb-client"
-NUM_CLIENTS=32
+CLIENT="${NODE_CLIENT_PREFIX}"
 
 # Copy from one GCE instance to another. Source instance must be SSH'able
 # from outside (i.e. where this script is run).

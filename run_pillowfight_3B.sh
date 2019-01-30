@@ -4,8 +4,9 @@ set -e
 
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 source ${DIR}/gcloud_inc.sh
+source ${DIR}/settings
 
-CLIENT="cb-client"
+CLIENT="${NODE_CLIENT_PREFIX}"
 NUM_DOCS=$(( 100 * 1000000 ))
 #NUM_DOCS=$(( 3000 * 1000000 ))
 #WORKING_SET=$(( 100 * 1000000 ))
@@ -24,7 +25,7 @@ DURABILITY="--durability"
 
 PILLOWFIGHT="ulimit -n 10240 && ./cbc-pillowfight --min-size=200 --max-size=200 \
   --num-threads=${THREADS} --num-items=${DOCS_PER_CLIENT} --set-pct=100 \
-  --spec=couchbase://cb-server-1/charlie --batch-size=${BATCH_SIZE} --num-cycles=${ITERATIONS} \
+  --spec=couchbase://${NODE_PREFIX}-1/charlie --batch-size=${BATCH_SIZE} --num-cycles=${ITERATIONS} \
   --sequential --no-population --rate-limit=${RATE_LIMIT} ${TOKENS} ${DURABILITY}"
 
 echo "=== Running ${NUM_CLIENTS} clients ${THREADS} threads accessing ${WORKING_SET} documents (${ITERATIONS} iterations) ==="
@@ -40,7 +41,7 @@ function ctrl_c() {
 }
 
 # Start monitoring
-monitor_host=cb-server-4
+monitor_host=${NODE_PREFIX}-4
 gcloud compute --project ${PROJECT} copy-files --zone ${ZONE} cb_perf_monitor.sh ${monitor_host}:.
 gcloud_ssh ${monitor_host} "chmod 0755 cb_perf_monitor.sh && ./cb_perf_monitor.sh" &
 MONITOR_PID=$!

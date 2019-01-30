@@ -7,6 +7,8 @@ apt-get update
 
 apt-get install -qq iftop sysstat
 
+apt-get install -qq gdb
+
 # Disable swapiness
 echo 0 > /proc/sys/vm/swappiness
 # Set the value in /etc/sysctl.conf so it stays after reboot.
@@ -32,18 +34,9 @@ fi
 exit 0
 EOL
 
-#Download and install CB 3.0.2
-wget http://packages.couchbase.com/releases/3.0.2/couchbase-server-enterprise_3.0.2-debian7_amd64.deb
-dpkg -i couchbase-server-enterprise_3.0.2-debian7_amd64.deb
+# Download and install CB 3.1
+wget http://packages.couchbase.com/releases/3.1.0/couchbase-server-enterprise_3.1.0-ubuntu12.04_amd64.deb
+dpkg -i couchbase-server-enterprise_3.1.0-ubuntu12.04_amd64.deb
 /etc/init.d/couchbase-server stop
-
-mkfs.ext4 -F /dev/sdb
-tune2fs -o journal_data_writeback /dev/sdb
-tune2fs -O ^has_journal /dev/sdb
-e2fsck -f /dev/sdb
-
-echo "/dev/sdb /opt/couchbase/var/lib/couchbase/data ext4 defaults,data=writeback,noatime,nodiratime 0 0" >> /etc/fstab
-mount /dev/sdb
-chown -R couchbase:couchbase /opt/couchbase/var/lib/couchbase/data
 
 poweroff

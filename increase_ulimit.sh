@@ -6,7 +6,7 @@
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 source ${DIR}/gcloud_inc.sh
 
-CLIENT="cb-client"
+CLIENT="${NODE_CLIENT_PREFIX}"
 
 for i in $(seq 9 32); do
     echo "* Increaing 'nofile' ulimit on client $i to 10240"
